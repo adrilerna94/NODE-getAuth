@@ -4,7 +4,7 @@
 import mongoose from 'mongoose';
 import { IUser } from '../types/user.interface';
 
-export interface IUserModel extends IUser, mongoose.Document {}
+export interface IUserModel extends Omit<IUser, '_id'>, mongoose.Document {}
 
 const userSchema = new mongoose.Schema(
   {
