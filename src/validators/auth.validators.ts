@@ -2,8 +2,10 @@
 // Ensures that incoming data adheres to the required structure and rules.
 
 import Joi from 'joi';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const joiObjectId = require('joi-objectid')(Joi); // 🔹 Usar require() en lugar de import
+import joiObjectId from 'joi-objectid';
+
+// usamos objectId de Joi que es equivalente a id formato mongoose
+const joiID = joiObjectId(Joi);
 
 export const userRegisterSchema = Joi.object({
   name: Joi.string().min(3).max(30).optional(),
@@ -41,7 +43,7 @@ export const userLoginSchema = Joi.object({
 });
 
 export const userIdSchema = Joi.object({
-  id: joiObjectId().required().messages({
+  id: joiID().required().messages({
     'any.required': 'El campo ID es obligatorio.',
     'string.pattern.name': 'El ID debe ser un ObjectId válido de MongoDB.',
   })
