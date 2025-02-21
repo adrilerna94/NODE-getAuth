@@ -11,3 +11,5 @@ export const authRouter = Router();
 
 authRouter.post('/login', validate(userLoginSchema, 'body'), authController.login);
 authRouter.post('/register', validate(userRegisterSchema, 'body'), authController.register);
+// faltaría añadir middleware
+authRouter.post('/refresh', authController.refresh);

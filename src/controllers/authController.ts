@@ -4,6 +4,7 @@
 
 import { NextFunction, type Request, type Response } from 'express';
 import { AuthService } from '../services/auth.service';
+import { verifyRefreshToken } from '../utils/auth/token';
 
 export class AuthController {
   private authService: AuthService;
@@ -11,6 +12,7 @@ export class AuthController {
   constructor() {
     this.authService = new AuthService();
   }
+
   login = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tokenData = await this.authService.login(req.body.email, req.body.password);
@@ -37,5 +39,19 @@ export class AuthController {
       next(error);
     }
   };
+
+  refresh = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { refreshToken } = req.body;
+      const newToken = await verifyRefreshToken(refreshToken);
+      const response = {
+        message: 'New AccessToken Successfully generated',
+        newAccessToken: newToken
+      }
+      res.send(response);
+    } catch (error) {
+      next(error)
+    }
+  }
 
 }
