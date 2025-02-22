@@ -17,7 +17,7 @@ export class AuthController {
     try {
       const data = await this.authService.login(req.body);
       const response = {
-        message: 'User successfully logged in',
+        message: `${data?.user.name} successfully logged in`,
         data
       };
       res.send(response);
