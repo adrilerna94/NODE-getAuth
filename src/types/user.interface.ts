@@ -5,7 +5,7 @@ import { Document, Types } from "mongoose";
 
 // Interfaz de usuario sin métodos de Mongoose
 export interface IUser {
-  _id?: Types.ObjectId;  // ✅ ID opcional
+  _id?: Types.ObjectId | string | unknown; // 🔹 Aseguramos compatibilidad
   name?: string;
   email: string;
   password: string;

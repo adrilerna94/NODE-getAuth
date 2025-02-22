@@ -15,11 +15,10 @@ export class AuthController {
 
   login = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const tokenData = await this.authService.login(req.body.email, req.body.password);
+      const data = await this.authService.login(req.body);
       const response = {
         message: 'User successfully logged in',
-        accessToken: tokenData.accessToken,
-        refreshToken: tokenData.refreshToken,
+        data
       };
       res.send(response);
     } catch (error) {
@@ -32,7 +31,12 @@ export class AuthController {
       const registeredUser = await this.authService.register(req.body);
       const response = {
         message: `${registeredUser?.name} successfully registered`,
-        user: registeredUser
+        user: {
+          id: registeredUser?._id,
+          name: registeredUser?.name,
+          email: registeredUser?.email,
+          password: registeredUser?.password,
+        },
       };
       res.send(response);
     } catch (error) {
@@ -43,7 +47,7 @@ export class AuthController {
   refresh = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { refreshToken } = req.body;
-      const newToken = await verifyRefreshToken(refreshToken);
+      const newToken = await verifyRefreshToken(refreshToken, req.body);
       const response = {
         message: 'New AccessToken Successfully generated',
         newAccessToken: newToken

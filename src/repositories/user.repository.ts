@@ -13,13 +13,13 @@ export class UserRepository {
 
   constructor() {
     this.baseRepository = new BaseRepository(UserModel);
-    this.defaultProjection = { refreshTokens: 0 } // filtramos info sensible
-    this.registerProjection = { createdAt: 0, updatedAt: 0} // filtramos info sensible
+    // this.defaultProjection = { refreshTokens: 0 } // filtramos info sensible
+    this.registerProjection = { createdAt: 0, updatedAt: 0 , __v: 0} // filtramos info sensible
   }
   register = async (user: Omit<IUser, 'createdAt' | 'updatedAt'>) => await this.baseRepository.register(user, this.registerProjection);
 
-  findByEmail = async (email: string) => await this.baseRepository.findByEmail(email, this.defaultProjection);
+  findByEmail = async (email: string) => await this.baseRepository.findByEmail(email);
 
-  update = async (user: IUser) => await this.baseRepository.updateRefreshToken(user, this.defaultProjection);
+  update = async (user: IUser) => await this.baseRepository.updateRefreshToken(user);
 
 }

@@ -7,7 +7,7 @@ import { AppError } from '../utils/application.error';
 import bcrypt from 'bcrypt';
 import { IUser } from '../types/user.interface';
 import { hashPassword } from '../utils/auth/hash';
-import { generateAccessToken, generateRefreshToken } from '../utils/auth/token';
+import { formatJwtTimestamp, generateAccessToken, generateRefreshToken, parseJwt } from '../utils/auth/token';
 
 export class AuthService {
   private userRepository: UserRepository;
@@ -31,27 +31,51 @@ export class AuthService {
     return this.userRepository.register(newUser);
   }
 
-  login = async (email: string, password: string) => {
-    const user = await this.userRepository.findByEmail(email);
+  login = async (userData: Omit<IUser, '_id' | 'createdAt' | 'updatedAt'>) => {
+    const user = await this.userRepository.findByEmail(userData.email);
     if (!user){
-      throw new AppError('User not Found. Please Register', httpStatus.NOTFOUND);
+        throw new AppError('User not Found. Please Register', httpStatus.NOTFOUND);
     }
-    // Check hashedPassword in DB with UserPassword
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      throw new AppError('Invalid Credentials', httpStatus.UNAUTHORIZED);
-    }
-    // Generate JWT Tokens
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
 
-    // save RefreshToken en User
+    // Check hashedPassword in DB with UserPassword
+    const isMatch = await bcrypt.compare(userData.password, user.password);
+    if (!isMatch) {
+        throw new AppError('Invalid Credentials', httpStatus.UNAUTHORIZED);
+    }
+
+    // Generate JWT Tokens
+    const accessToken = generateAccessToken(userData);
+    const refreshToken = generateRefreshToken(userData);
+
+    // Decodificar los tokens con seguridad
+    const decodedAccessToken = parseJwt(accessToken);
+    const decodedRefreshToken = parseJwt(refreshToken);
+
+    // Agregar refreshToken y actualizar usuarios
     user.refreshTokens.push(refreshToken);
-    // actualizar en la bbdd
     await this.userRepository.update(user);
-    // retornamos accessToken para login
-    // y refreshToken para poderseguirlogeados pasada 1h (caduca token)
-    return { accessToken, refreshToken};
-  }
+
+    // Formatear fechas
+    const formattedAccessToken = {
+      token: accessToken,
+      issuedAt: formatJwtTimestamp(decodedAccessToken.iat),
+      expiresAt: formatJwtTimestamp(decodedAccessToken.exp)
+    };
+
+    const formattedRefreshToken = {
+      token: refreshToken,
+      issuedAt: formatJwtTimestamp(decodedRefreshToken.iat),
+      expiresAt: formatJwtTimestamp(decodedRefreshToken.exp)
+    };
+    return {
+        accessToken: formattedAccessToken,
+        refreshToken: formattedRefreshToken,
+        user: {
+            id: user._id as string,
+            email: user.email,
+            name: user.name
+        }
+    };
+};
 
 }

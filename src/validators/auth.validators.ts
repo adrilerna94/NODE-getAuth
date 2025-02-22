@@ -11,14 +11,14 @@ export const userRegisterSchema = Joi.object({
   name: Joi.string().min(3).max(30).optional(),
   email: Joi.string().email().required(),
   password: Joi.string()
-    .min(8) // Mínimo 8 caracteres
-    .pattern(new RegExp("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")) // Letras y números obligatorios
-    .required()
-    .messages({
-      'string.pattern.base': 'La contraseña debe tener al menos 8 caracteres, incluyendo al menos una letra y un número.',
-      'string.min': 'La contraseña debe tener al menos 8 caracteres.',
-      'any.required': 'El campo password es obligatorio.',
-    }),
+  .min(8) // Mínimo 8 caracteres
+  .pattern(new RegExp("^(?=.*[A-Z])(?=.*\\d)(?=.*\\W)[A-Za-z\\d\\W]{8,}$"))
+  .required()
+  .messages({
+    'string.pattern.base': 'The password must be at least 8 characters long and include at least one uppercase letter, one number, and one symbol.',
+    'string.min': 'The password must be at least 8 characters long.',
+    'any.required': 'The password field is required.',
+  }),
   confirm_password: Joi.string()
     .valid(Joi.ref('password'))
     .required()
@@ -33,13 +33,13 @@ export const userLoginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string()
     .min(8) // Mínimo 8 caracteres
-    .pattern(new RegExp("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")) // Letras y números obligatorios
+    .pattern(new RegExp("^(?=.*[A-Z])(?=.*\\d)(?=.*\\W)[A-Za-z\\d\\W]{8,}$"))
     .required()
     .messages({
-      'string.pattern.base': 'La contraseña debe tener al menos 8 caracteres, incluyendo al menos una letra y un número.',
-      'string.min': 'La contraseña debe tener al menos 8 caracteres.',
-      'any.required': 'El campo password es obligatorio.',
-    }),
+      'string.pattern.base': 'The password must be at least 8 characters long and include at least one uppercase letter, one number, and one symbol.',
+      'string.min': 'The password must be at least 8 characters long.',
+      'any.required': 'The password field is required.',
+    })
 });
 
 export const userIdSchema = Joi.object({

@@ -3,6 +3,7 @@ import { IUser } from "../../types/user.interface";
 import { AppError } from "../application.error";
 import { httpStatus } from "../../config/httpStatusCodes";
 import { UserRepository } from "../../repositories/user.repository";
+import { DecodedToken } from "../../types/decodedToken.interface";
 
 const userRepository = new UserRepository();
 
@@ -21,7 +22,7 @@ function generateRefreshToken (user: IUser) {
     return jwt.sign(payLoad, secretRefreshKey as string, options);
 }
 
-const verifyRefreshToken = async (refreshToken: string) => {
+const verifyRefreshToken = async (refreshToken: string, userData: IUser) => {
     try {
         // 1️⃣ Verificar el token y tipar correctamente `decoded`
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as JwtPayload;
@@ -41,14 +42,14 @@ const verifyRefreshToken = async (refreshToken: string) => {
         }
 
         // 4️⃣ Generar nuevos tokens
-        const newAccessToken = generateAccessToken(user);
-        const newRefreshToken = generateRefreshToken(user);
+        const newAccessToken = generateAccessToken(userData);
+        const newRefreshToken = generateRefreshToken(userData);
 
         // 5️⃣ Actualizar refreshTokens en la base de datos
         user.refreshTokens = user.refreshTokens.filter((token) => token !== refreshToken); // Eliminar el viejo
         user.refreshTokens.push(newRefreshToken); // Agregar el nuevo
 
-        await userRepository.update(user);
+        await userRepository.update(userData);
         return { accessToken: newAccessToken, refreshToken: newRefreshToken };
 
     } catch (error) {
@@ -56,5 +57,17 @@ const verifyRefreshToken = async (refreshToken: string) => {
     }
   };
 
+  function formatJwtTimestamp	(timestamp: number): string {
+    return new Date(timestamp * 1000).toLocaleString("es-ES", { timeZone: "UTC" });
+  }
 
-export { generateRefreshToken, generateAccessToken, verifyRefreshToken};
+  function parseJwt(token: string): DecodedToken {
+    const decoded = jwt.decode(token) as DecodedToken | null;
+    if (!decoded) {
+        throw new AppError("Invalid Token", httpStatus.BAD_REQUEST);
+    }
+    return decoded;
+}
+
+
+export { generateRefreshToken, generateAccessToken, verifyRefreshToken, formatJwtTimestamp, parseJwt };

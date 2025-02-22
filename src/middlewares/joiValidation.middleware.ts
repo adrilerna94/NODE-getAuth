@@ -19,7 +19,7 @@ export const validate = <ReqParams, ReqBody, ReqQuery>(
     const result = schema.validate(objToValidate, { abortEarly: false });
     if (result.error) {
       const responseObj = { msg: result.error.details.map((detail) => detail.message) };
-      res.status(httpStatus.badRequest).send(responseObj);
+      res.status(httpStatus.BAD_REQUEST).send(responseObj);
     } else {
       next();
     }
